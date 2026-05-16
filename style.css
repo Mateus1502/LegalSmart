@@ -37,6 +37,12 @@ body {
     padding: 60px 20px;
 
     text-align: center;
+
+    background: rgba(17, 24, 39, 0.85);
+
+    border-radius: 24px;
+
+    margin-bottom: 40px;
 }
 
 .hero h1 {
