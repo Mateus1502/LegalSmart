@@ -63,12 +63,6 @@ def load_css():
 
 load_css()
 
-st.markdown(
-    "<h1 style='color:white'>TESTE</h1>",
-    unsafe_allow_html=True
-)
-
-
 # =====================================================
 # FUNÇÕES IA
 # =====================================================
@@ -159,24 +153,17 @@ def gerar_pdf(resumo):
 # HERO
 # =====================================================
 
-hero_html = """
-<div class="hero">
-
-    <h1>⚖️ LegalSmart</h1>
-
-    <p class="hero-text">
-        Seu Paralegal inteligente
-        para análise contratual
-    </p>
-
-</div>
-"""
-
 st.markdown(
-    hero_html,
+    """
+    <div class="hero">
+        <h1>⚖️ LegalSmart</h1>
+        <p class="hero-text">
+            Seu Paralegal inteligente para análise contratual
+        </p>
+    </div>
+    """,
     unsafe_allow_html=True
 )
-
 
 # =====================================================
 # API
