@@ -233,7 +233,7 @@ if "vectorstore" in st.session_state:
 
         llm = ChatGroq(
             groq_api_key=groq_key,
-            model_name="llama-3.3-70b-versatile",
+            model_name="llama-3.1-8b-instant",
             temperature=0
         )
 
