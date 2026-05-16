@@ -40,11 +40,18 @@ from reportlab.lib.styles import (
 # CONFIG
 # =====================================================
 
-st.set_page_config(
-    page_title="LegalSmart",
-    page_icon="⚖️",
-    layout="wide"
-)
+st.markdown("""
+<div class="hero">
+
+    <h1>⚖️ LegalSmart</h1>
+
+    <p>
+        Seu Paralegal inteligente
+        para análise contratual
+    </p>
+
+</div>
+""", unsafe_allow_html=True)
 
 
 # =====================================================
