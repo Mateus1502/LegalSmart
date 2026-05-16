@@ -1,14 +1,38 @@
+# =====================================================
+# IMPORTS
+# =====================================================
+
 import tempfile
 import streamlit as st
 
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter
 )
-from langchain_community.document_loaders import PyPDFLoader
+
+from langchain_community.document_loaders import (
+    PyPDFLoader
+)
+
 from langchain_groq import ChatGroq
-from langchain_community.vectorstores import FAISS
+
+from langchain_community.vectorstores import (
+    FAISS
+)
+
 from langchain_community.embeddings import (
     HuggingFaceEmbeddings
+)
+
+from gtts import gTTS
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib.styles import (
+    getSampleStyleSheet
 )
 
 
@@ -28,7 +52,12 @@ st.set_page_config(
 # =====================================================
 
 def load_css():
-    with open("style.css", encoding="utf-8") as f:
+
+    with open(
+        "style.css",
+        encoding="utf-8"
+    ) as f:
+
         st.markdown(
             f"<style>{f.read()}</style>",
             unsafe_allow_html=True
@@ -48,10 +77,15 @@ def carregar_pdf(uploaded_file):
         suffix=".pdf"
     ) as tmp:
 
-        tmp.write(uploaded_file.read())
+        tmp.write(
+            uploaded_file.read()
+        )
+
         caminho_pdf = tmp.name
 
-    loader = PyPDFLoader(caminho_pdf)
+    loader = PyPDFLoader(
+        caminho_pdf
+    )
 
     return loader.load()
 
@@ -63,14 +97,16 @@ def dividir_texto(documentos):
         chunk_overlap=200
     )
 
-    return splitter.split_documents(documentos)
+    return splitter.split_documents(
+        documentos
+    )
 
 
-def criar_base_vetorial(chunks, api_key):
+def criar_base_vetorial(chunks):
 
     embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
 
     return FAISS.from_documents(
         chunks,
@@ -79,15 +115,76 @@ def criar_base_vetorial(chunks, api_key):
 
 
 # =====================================================
+# PDF
+# =====================================================
+
+def gerar_pdf(resumo):
+
+    caminho_pdf = "resumo_contrato.pdf"
+
+    doc = SimpleDocTemplate(
+        caminho_pdf
+    )
+
+    styles = getSampleStyleSheet()
+
+    elementos = []
+
+    titulo = Paragraph(
+        "Resumo Jurídico - LegalSmart",
+        styles["Title"]
+    )
+
+    texto = Paragraph(
+        resumo,
+        styles["BodyText"]
+    )
+
+    elementos.append(titulo)
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    elementos.append(texto)
+
+    doc.build(elementos)
+
+    return caminho_pdf
+
+
+# =====================================================
+# AUDIO
+# =====================================================
+
+def gerar_audio(texto):
+
+    caminho_audio = "resposta.mp3"
+
+    tts = gTTS(
+        text=texto,
+        lang="pt-br"
+    )
+
+    tts.save(caminho_audio)
+
+    return caminho_audio
+
+
+# =====================================================
 # HERO
 # =====================================================
 
 st.markdown("""
 <div class="hero">
+
     <h1>⚖️ LegalSmart</h1>
+
     <p>
-        Seu Paralegal inteligente para análise contratual
+        Seu Paralegal inteligente
+        para análise contratual
     </p>
+
 </div>
 """, unsafe_allow_html=True)
 
@@ -96,7 +193,12 @@ st.markdown("""
 # API
 # =====================================================
 
-groq_key = st.secrets["GROQ_API_KEY"]
+groq_key = st.secrets.get(
+    "GROQ_API_KEY",
+    ""
+)
+
+
 # =====================================================
 # UPLOAD
 # =====================================================
@@ -113,21 +215,109 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file and groq_key:
 
-    with st.spinner("Paralegal analisando..."):
+    if "vectorstore" not in st.session_state:
 
-        docs = carregar_pdf(uploaded_file)
+        with st.spinner(
+            "Paralegal analisando..."
+        ):
 
-        chunks = dividir_texto(docs)
+            docs = carregar_pdf(
+                uploaded_file
+            )
 
-        vectorstore = criar_base_vetorial(
-            chunks,
-            groq_key
+            chunks = dividir_texto(
+                docs
+            )
+
+            vectorstore = criar_base_vetorial(
+                chunks
+            )
+
+            st.session_state.vectorstore = (
+                vectorstore
+            )
+
+        st.success(
+            "Contrato processado."
         )
 
-        st.session_state.vectorstore = vectorstore
 
-    st.success("Contrato processado.")
+# =====================================================
+# AÇÕES
+# =====================================================
 
+if "vectorstore" in st.session_state:
+
+    col1 = st.columns(2)
+
+    gerar_resumo = col1.button(
+        "Gerar Resumo PDF",
+        use_container_width=True
+    )
+
+
+# =====================================================
+# RESUMO PDF
+# =====================================================
+
+    if gerar_resumo:
+
+        llm = ChatGroq(
+            groq_api_key=groq_key,
+            model_name="llama-3.3-70b-versatile",
+            temperature=0
+        )
+
+        docs = (
+            st.session_state.vectorstore
+            .similarity_search(
+                "Faça um resumo jurídico completo deste contrato",
+                k=8
+            )
+        )
+
+        contexto = "\n\n".join([
+            doc.page_content
+            for doc in docs
+        ])
+
+        prompt = f"""
+        Gere um resumo jurídico
+        profissional e objetivo.
+
+        NÃO:
+        - invente informações
+        - assine mensagens
+        - escreva como e-mail
+
+        Contexto:
+        {contexto}
+        """
+
+        resumo = llm.invoke(
+            prompt
+        ).content
+
+        pdf_path = gerar_pdf(
+            resumo
+        )
+
+        st.success(
+            "Resumo gerado com sucesso!"
+        )
+
+        with open(
+            pdf_path,
+            "rb"
+        ) as file:
+
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=file,
+                file_name="resumo_contrato.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
 
 
 # =====================================================
@@ -135,6 +325,7 @@ if uploaded_file and groq_key:
 # =====================================================
 
 if "messages" not in st.session_state:
+
     st.session_state.messages = []
 
 
@@ -147,7 +338,11 @@ for msg in st.session_state.messages:
     )
 
     st.markdown(
-        f'<div class="{classe}">{msg["content"]}</div>',
+        f"""
+        <div class="{classe}">
+            {msg["content"]}
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -157,11 +352,20 @@ pergunta = st.chat_input(
 )
 
 
-if pergunta and "vectorstore" in st.session_state:
+# =====================================================
+# RESPOSTA IA
+# =====================================================
+
+if (
+    pergunta
+    and "vectorstore" in st.session_state
+):
 
     st.session_state.messages.append({
+
         "role": "user",
         "content": pergunta
+
     })
 
     llm = ChatGroq(
@@ -170,31 +374,34 @@ if pergunta and "vectorstore" in st.session_state:
         temperature=0
     )
 
-    docs = st.session_state.vectorstore.similarity_search(
-        pergunta,
-        k=4
+    docs = (
+        st.session_state.vectorstore
+        .similarity_search(
+            pergunta,
+            k=4
+        )
     )
 
-    contexto = "\n\n".join(
-        [doc.page_content for doc in docs]
-    )
+    contexto = "\n\n".join([
+        doc.page_content
+        for doc in docs
+    ])
 
     prompt = f"""
-    Você é um Paralegal jurídico profissional.
+    Você é um Paralegal jurídico.
 
-    Responda de forma objetiva, moderna e clara.
+    Responda de forma:
+    - objetiva
+    - moderna
+    - clara
 
     NÃO:
     - assine mensagens
     - diga "atenciosamente"
-    - diga "prezado advogado"
     - invente nomes
-    - finalize como e-mail
-
-    Responda apenas com a informação jurídica.
+    - escreva como e-mail
 
     Use apenas o contexto abaixo.
-
 
     Contexto:
     {contexto}
@@ -203,11 +410,15 @@ if pergunta and "vectorstore" in st.session_state:
     {pergunta}
     """
 
-    resposta = llm.invoke(prompt).content
+    resposta = llm.invoke(
+        prompt
+    ).content
 
     st.session_state.messages.append({
+
         "role": "assistant",
         "content": resposta
+
     })
 
     st.rerun()
