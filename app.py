@@ -35,6 +35,18 @@ from reportlab.lib.styles import (
     getSampleStyleSheet
 )
 
+
+# =====================================================
+# CONFIG
+# =====================================================
+
+st.set_page_config(
+    page_title="LegalSmart",
+    page_icon="⚖️",
+    layout="wide"
+)
+
+
 # =====================================================
 # CSS
 # =====================================================
@@ -163,18 +175,23 @@ def gerar_audio(texto):
 # HERO
 # =====================================================
 
-st.markdown("""
-<div class="hero">
+st.markdown(
+    """
+    <div class="hero">
 
-    <h1>⚖️ LegalSmart</h1>
+        <h1>
+            ⚖️ LegalSmart
+        </h1>
 
-    <p>
-        Seu Paralegal inteligente
-        para análise contratual
-    </p>
+        <p class="hero-text">
+            Seu Paralegal inteligente
+            para análise contratual
+        </p>
 
-</div>
-""", unsafe_allow_html=True)
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # =====================================================
@@ -236,7 +253,7 @@ if uploaded_file and groq_key:
 
 if "vectorstore" in st.session_state:
 
-    col1 = st.columns(2)
+    col1 = st.columns(1)
 
     gerar_resumo = col1.button(
         "Gerar Resumo PDF",
