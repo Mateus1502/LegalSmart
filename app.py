@@ -150,26 +150,25 @@ def gerar_pdf(resumo):
 
     return caminho_pdf
 
-
 # =====================================================
 # HERO
 # =====================================================
 
+hero_html = """
+<div class="hero">
+
+    <h1>⚖️ LegalSmart</h1>
+
+    <p class="hero-text">
+        Seu Paralegal inteligente
+        para análise contratual
+    </p>
+
+</div>
+"""
+
 st.markdown(
-    """
-    <div class="hero">
-
-        <h1>
-            ⚖️ LegalSmart
-        </h1>
-
-        <p class="hero-text">
-            Seu Paralegal inteligente
-            para análise contratual
-        </p>
-
-    </div>
-    """,
+    hero_html,
     unsafe_allow_html=True
 )
 
