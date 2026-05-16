@@ -6,3 +6,5 @@ langchain-text-splitters
 sentence-transformers
 faiss-cpu
 pypdf
+gtts
+reportlab
