@@ -63,6 +63,11 @@ def load_css():
 
 load_css()
 
+st.markdown(
+    "<h1 style='color:white'>TESTE</h1>",
+    unsafe_allow_html=True
+)
+
 
 # =====================================================
 # FUNÇÕES IA
