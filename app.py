@@ -23,8 +23,6 @@ from langchain_community.embeddings import (
     HuggingFaceEmbeddings
 )
 
-from gtts import gTTS
-
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -154,24 +152,6 @@ def gerar_pdf(resumo):
 
 
 # =====================================================
-# AUDIO
-# =====================================================
-
-def gerar_audio(texto):
-
-    caminho_audio = "resposta.mp3"
-
-    tts = gTTS(
-        text=texto,
-        lang="pt-br"
-    )
-
-    tts.save(caminho_audio)
-
-    return caminho_audio
-
-
-# =====================================================
 # HERO
 # =====================================================
 
@@ -248,22 +228,15 @@ if uploaded_file and groq_key:
 
 
 # =====================================================
-# AÇÕES
+# RESUMO PDF
 # =====================================================
 
 if "vectorstore" in st.session_state:
 
-    col1 = st.columns(1)
-
-    gerar_resumo = col1.button(
-        "Gerar Resumo PDF",
+    gerar_resumo = st.button(
+        "📄 Gerar Resumo PDF",
         use_container_width=True
     )
-
-
-# =====================================================
-# RESUMO PDF
-# =====================================================
 
     if gerar_resumo:
 
