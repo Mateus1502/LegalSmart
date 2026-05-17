@@ -4,14 +4,10 @@
 
 import tempfile
 import streamlit as st
-import re
+import pdfplumber
 
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter
-)
-
-from langchain_community.document_loaders import (
-    PyPDFLoader
 )
 
 from langchain_groq import ChatGroq
@@ -23,6 +19,8 @@ from langchain_community.vectorstores import (
 from langchain_community.embeddings import (
     HuggingFaceEmbeddings
 )
+
+from gtts import gTTS
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -64,40 +62,39 @@ def load_css():
 
 load_css()
 
+
 # =====================================================
 # FUNÇÕES IA
 # =====================================================
 
+
 def carregar_pdf(uploaded_file):
 
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".pdf"
-    ) as tmp:
+    texto = ""
 
-        tmp.write(
-            uploaded_file.read()
-        )
+    with pdfplumber.open(uploaded_file) as pdf:
 
-        caminho_pdf = tmp.name
+        for pagina in pdf.pages:
 
-    loader = PyPDFLoader(
-        caminho_pdf
-    )
+            conteudo = pagina.extract_text()
 
-    return loader.load()
+            if conteudo:
+
+                texto += conteudo + "\n"
+
+    return texto
 
 
-def dividir_texto(documentos):
+def dividir_texto(texto):
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200
     )
 
-    return splitter.split_documents(
-        documentos
-    )
+    chunks = splitter.create_documents([texto])
+
+    return chunks
 
 
 def criar_base_vetorial(chunks):
@@ -133,12 +130,8 @@ def gerar_pdf(resumo):
         styles["Title"]
     )
 
-    texto_limpo = limpar_texto_pdf(
-        resumo
-    )
-
     texto = Paragraph(
-        texto_limpo,
+        resumo,
         styles["BodyText"]
     )
 
@@ -155,24 +148,23 @@ def gerar_pdf(resumo):
     return caminho_pdf
 
 
-
-
 # =====================================================
-# LIMPEZA PDF
+# AUDIO
 # =====================================================
 
-def limpar_texto_pdf(texto):
+def gerar_audio(texto):
 
-    texto = re.sub(r"\*\*", "", texto)
+    caminho_audio = "resposta.mp3"
 
-    texto = re.sub(r"\*", "", texto)
-
-    texto = texto.replace(
-        "\n",
-        "<br/><br/>"
+    tts = gTTS(
+        text=texto,
+        lang="pt-br"
     )
 
-    return texto
+    tts.save(caminho_audio)
+
+    return caminho_audio
+
 
 # =====================================================
 # HERO
@@ -181,14 +173,21 @@ def limpar_texto_pdf(texto):
 st.markdown(
     """
     <div class="hero">
-        <h1>⚖️ LegalSmart</h1>
+
+        <h1>
+            ⚖️ LegalSmart
+        </h1>
+
         <p class="hero-text">
-            Seu Paralegal inteligente para análise contratual
+            Seu Paralegal inteligente
+            para análise contratual
         </p>
+
     </div>
     """,
     unsafe_allow_html=True
 )
+
 
 # =====================================================
 # API
@@ -216,18 +215,21 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file and groq_key:
 
-    if "vectorstore" not in st.session_state:
+    if (
+        "arquivo_atual" not in st.session_state
+        or st.session_state.arquivo_atual != uploaded_file.name
+    ):
 
         with st.spinner(
             "Paralegal analisando..."
         ):
 
-            docs = carregar_pdf(
+            texto = carregar_pdf(
                 uploaded_file
             )
 
             chunks = dividir_texto(
-                docs
+                texto
             )
 
             vectorstore = criar_base_vetorial(
@@ -238,38 +240,38 @@ if uploaded_file and groq_key:
                 vectorstore
             )
 
+            st.session_state.arquivo_atual = (
+                uploaded_file.name
+            )
+
         st.success(
             "Contrato processado."
         )
 
 
 # =====================================================
-# RESUMO PDF
+# AÇÕES
 # =====================================================
 
 if "vectorstore" in st.session_state:
 
-    st.markdown(
-        """
-        <div class="section">
-            <h2 class="section-title">
-                Ferramentas
-            </h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    col1 = st.columns(1)
 
-    gerar_resumo = st.button(
+    gerar_resumo = col1.button(
         "Gerar Resumo PDF",
         use_container_width=True
     )
+
+
+# =====================================================
+# RESUMO PDF
+# =====================================================
 
     if gerar_resumo:
 
         llm = ChatGroq(
             groq_api_key=groq_key,
-            model_name="llama-3.1-8b-instant",
+            model_name="llama-3.3-70b-versatile",
             temperature=0
         )
 
@@ -277,7 +279,7 @@ if "vectorstore" in st.session_state:
             st.session_state.vectorstore
             .similarity_search(
                 "Faça um resumo jurídico completo deste contrato",
-                k=8
+                k=4
             )
         )
 
@@ -317,12 +319,14 @@ if "vectorstore" in st.session_state:
         ) as file:
 
             st.download_button(
-                label="Download PDF",
+                label="⬇️ Download PDF",
                 data=file,
                 file_name="resumo_contrato.pdf",
                 mime="application/pdf",
                 use_container_width=True
             )
+
+
 # =====================================================
 # CHAT
 # =====================================================
