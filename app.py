@@ -55,7 +55,7 @@ def carregar_pdf(uploaded_file):
             if conteudo:
                 texto += conteudo + "\n"
 
-    return texto[:50000]
+    return texto
 
 
 def dividir_texto(texto):
@@ -69,8 +69,12 @@ def dividir_texto(texto):
 
 def criar_base_vetorial(chunks):
     embeddings = HuggingFaceEmbeddings(
-        model_name="intfloat/multilingual-e5-base"
+        model_name="intfloat/multilingual-e5-base",
+        encode_kwargs={"normalize_embeddings": True}
     )
+
+    for doc in chunks:
+        doc.page_content = "passage: " + doc.page_content
 
     return FAISS.from_documents(chunks, embeddings)
 
@@ -140,7 +144,7 @@ def gerar_resumo_contrato(modo="texto"):
         st.session_state.vectorstore
         .similarity_search(
             "contrato cláusulas termos condições",
-            k=6
+            k=8
         )
     )
 
