@@ -133,14 +133,14 @@ def gerar_pdf(resumo):
         styles["Title"]
     )
 
-texto_limpo = limpar_texto_pdf(
-    resumo
-)
+    texto_limpo = limpar_texto_pdf(
+        resumo
+    )
 
-texto = Paragraph(
-    texto_limpo,
-    styles["BodyText"]
-)
+    texto = Paragraph(
+        texto_limpo,
+        styles["BodyText"]
+    )
 
     elementos.append(titulo)
 
