@@ -4,13 +4,14 @@ langchain
 langchain-community
 langchain-groq
 langchain-text-splitters
+langchain-huggingface
 
-sentence-transformers
+sentence-transformers==2.7.0
 
-faiss-cpu
+faiss-cpu==1.8.0.post1
 
 pdfplumber
 gtts
 reportlab
 
-numpy>=1.26.0,<2.0
+numpy==1.26.4
