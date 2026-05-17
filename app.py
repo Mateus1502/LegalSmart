@@ -60,8 +60,8 @@ def carregar_pdf(uploaded_file):
 
 def dividir_texto(texto):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=300,
-        chunk_overlap=100
+        chunk_size=1200,
+        chunk_overlap=250
     )
 
     return splitter.create_documents([texto])
@@ -69,7 +69,7 @@ def dividir_texto(texto):
 
 def criar_base_vetorial(chunks):
     embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name="intfloat/multilingual-e5-base"
     )
 
     return FAISS.from_documents(chunks, embeddings)
@@ -139,8 +139,8 @@ def gerar_resumo_contrato(modo="texto"):
     docs = (
         st.session_state.vectorstore
         .similarity_search(
-            "Faça um resumo jurídico completo deste contrato",
-            k=4
+            "contrato cláusulas termos condições",
+            k=6
         )
     )
 
