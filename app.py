@@ -248,16 +248,18 @@ if uploaded_file and groq_key:
 # =====================================================
 
 if "vectorstore" in st.session_state:
-st.markdown(
-    """
-    <div class="section">
-        <h2 class="section-title">
-            ⚙️ Ferramentas
-        </h2>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
+    st.markdown(
+        """
+        <div class="section">
+            <h2 class="section-title">
+                ⚙️ Ferramentas
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     gerar_resumo = st.button(
         "📄 Gerar Resumo PDF",
         use_container_width=True
@@ -321,8 +323,6 @@ st.markdown(
                 mime="application/pdf",
                 use_container_width=True
             )
-
-
 # =====================================================
 # CHAT
 # =====================================================
