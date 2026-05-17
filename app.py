@@ -10,7 +10,7 @@ from gtts import gTTS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -66,12 +66,13 @@ def dividir_texto(texto):
 
     return splitter.create_documents([texto])
 
-
+@st.cache_resource
 def criar_base_vetorial(chunks):
     embeddings = HuggingFaceEmbeddings(
-        model_name="intfloat/multilingual-e5-base",
-        encode_kwargs={"normalize_embeddings": True}
+        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+    return FAISS.from_documents(chunks, embeddings)
 
     for doc in chunks:
         doc.page_content = "passage: " + doc.page_content
