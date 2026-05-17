@@ -10,7 +10,7 @@ from gtts import gTTS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -55,27 +55,22 @@ def carregar_pdf(uploaded_file):
             if conteudo:
                 texto += conteudo + "\n"
 
-    return texto
+    return texto[:50000]
 
 
 def dividir_texto(texto):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1200,
-        chunk_overlap=250
+        chunk_size=1250,
+        chunk_overlap=300
     )
 
     return splitter.create_documents([texto])
 
-@st.cache_resource
+
 def criar_base_vetorial(chunks):
     embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-
-    return FAISS.from_documents(chunks, embeddings)
-
-    for doc in chunks:
-        doc.page_content = "passage: " + doc.page_content
 
     return FAISS.from_documents(chunks, embeddings)
 
@@ -144,7 +139,7 @@ def gerar_resumo_contrato(modo="texto"):
     docs = (
         st.session_state.vectorstore
         .similarity_search(
-            "contrato cláusulas termos condições",
+            "Faça um resumo jurídico completo deste contrato",
             k=8
         )
     )
