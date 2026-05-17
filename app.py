@@ -253,7 +253,7 @@ if "vectorstore" in st.session_state:
         """
         <div class="section">
             <h2 class="section-title">
-                ⚙️ Ferramentas
+                Ferramentas
             </h2>
         </div>
         """,
@@ -261,7 +261,7 @@ if "vectorstore" in st.session_state:
     )
 
     gerar_resumo = st.button(
-        "📄 Gerar Resumo PDF",
+        "Gerar Resumo PDF",
         use_container_width=True
     )
 
@@ -317,7 +317,7 @@ if "vectorstore" in st.session_state:
         ) as file:
 
             st.download_button(
-                label="⬇️ Download PDF",
+                label="Download PDF",
                 data=file,
                 file_name="resumo_contrato.pdf",
                 mime="application/pdf",
