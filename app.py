@@ -4,11 +4,13 @@
 
 import tempfile
 import streamlit as st
+import re
 import pdfplumber
 
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter
 )
+
 
 from langchain_groq import ChatGroq
 
@@ -19,8 +21,6 @@ from langchain_community.vectorstores import (
 from langchain_community.embeddings import (
     HuggingFaceEmbeddings
 )
-
-from gtts import gTTS
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -62,11 +62,9 @@ def load_css():
 
 load_css()
 
-
 # =====================================================
 # FUNÇÕES IA
 # =====================================================
-
 
 def carregar_pdf(uploaded_file):
 
@@ -81,6 +79,7 @@ def carregar_pdf(uploaded_file):
             if conteudo:
 
                 texto += conteudo + "\n"
+                texto = texto[:50000]
 
     return texto
 
@@ -88,8 +87,8 @@ def carregar_pdf(uploaded_file):
 def dividir_texto(texto):
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
+        chunk_size=300,
+        chunk_overlap=100
     )
 
     chunks = splitter.create_documents([texto])
@@ -130,8 +129,12 @@ def gerar_pdf(resumo):
         styles["Title"]
     )
 
+    texto_limpo = limpar_texto_pdf(
+        resumo
+    )
+
     texto = Paragraph(
-        resumo,
+        texto_limpo,
         styles["BodyText"]
     )
 
@@ -148,23 +151,24 @@ def gerar_pdf(resumo):
     return caminho_pdf
 
 
+
+
 # =====================================================
-# AUDIO
+# LIMPEZA PDF
 # =====================================================
 
-def gerar_audio(texto):
+def limpar_texto_pdf(texto):
 
-    caminho_audio = "resposta.mp3"
+    texto = re.sub(r"\*\*", "", texto)
 
-    tts = gTTS(
-        text=texto,
-        lang="pt-br"
+    texto = re.sub(r"\*", "", texto)
+
+    texto = texto.replace(
+        "\n",
+        "<br/><br/>"
     )
 
-    tts.save(caminho_audio)
-
-    return caminho_audio
-
+    return texto
 
 # =====================================================
 # HERO
@@ -173,21 +177,14 @@ def gerar_audio(texto):
 st.markdown(
     """
     <div class="hero">
-
-        <h1>
-            ⚖️ LegalSmart
-        </h1>
-
+        <h1>⚖️ LegalSmart</h1>
         <p class="hero-text">
-            Seu Paralegal inteligente
-            para análise contratual
+            Seu Paralegal inteligente para análise contratual
         </p>
-
     </div>
     """,
     unsafe_allow_html=True
 )
-
 
 # =====================================================
 # API
@@ -207,6 +204,18 @@ uploaded_file = st.file_uploader(
     "Upload do contrato",
     type=["pdf"]
 )
+
+if uploaded_file is None:
+
+    st.session_state.pop(
+        "vectorstore",
+        None
+    )
+
+    st.session_state.pop(
+        "arquivo_atual",
+        None
+    )
 
 
 # =====================================================
@@ -248,30 +257,33 @@ if uploaded_file and groq_key:
             "Contrato processado."
         )
 
-
 # =====================================================
-# AÇÕES
+# RESUMO PDF
 # =====================================================
 
 if "vectorstore" in st.session_state:
 
-    col1 = st.columns(1)
+    st.markdown(
+        """
+        <div class="section">
+            <h2 class="section-title">
+                Ferramentas
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    gerar_resumo = col1.button(
+    gerar_resumo = st.button(
         "Gerar Resumo PDF",
         use_container_width=True
     )
-
-
-# =====================================================
-# RESUMO PDF
-# =====================================================
 
     if gerar_resumo:
 
         llm = ChatGroq(
             groq_api_key=groq_key,
-            model_name="llama-3.3-70b-versatile",
+            model_name="llama-3.1-8b-instant",
             temperature=0
         )
 
@@ -319,14 +331,12 @@ if "vectorstore" in st.session_state:
         ) as file:
 
             st.download_button(
-                label="⬇️ Download PDF",
+                label="Download PDF",
                 data=file,
                 file_name="resumo_contrato.pdf",
                 mime="application/pdf",
                 use_container_width=True
             )
-
-
 # =====================================================
 # CHAT
 # =====================================================
@@ -377,7 +387,7 @@ if (
 
     llm = ChatGroq(
         groq_api_key=groq_key,
-        model_name="llama-3.3-70b-versatile",
+        model_name="llama-3.1-8b-instant",
         temperature=0
     )
 
@@ -395,20 +405,25 @@ if (
     ])
 
     prompt = f"""
-    Você é um Paralegal jurídico.
+    Você é um assistente jurídico especializado
+    em análise contratual.
+
+    RESPONDA APENAS COM BASE NO CONTEXTO.
+
+    Se a informação não estiver no contrato:
+    diga que não foi encontrada.
+
+    NÃO:
+    - invente cláusulas
+    - invente informações
+    - faça suposições
+    - escreva como e-mail
+    - assine respostas
 
     Responda de forma:
     - objetiva
-    - moderna
+    - profissional
     - clara
-
-    NÃO:
-    - assine mensagens
-    - diga "atenciosamente"
-    - invente nomes
-    - escreva como e-mail
-
-    Use apenas o contexto abaixo.
 
     Contexto:
     {contexto}
