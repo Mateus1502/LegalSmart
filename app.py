@@ -4,6 +4,7 @@
 
 import tempfile
 import streamlit as st
+import re
 
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter
@@ -132,10 +133,14 @@ def gerar_pdf(resumo):
         styles["Title"]
     )
 
-    texto = Paragraph(
-        resumo,
-        styles["BodyText"]
-    )
+texto_limpo = limpar_texto_pdf(
+    resumo
+)
+
+texto = Paragraph(
+    texto_limpo,
+    styles["BodyText"]
+)
 
     elementos.append(titulo)
 
@@ -148,6 +153,26 @@ def gerar_pdf(resumo):
     doc.build(elementos)
 
     return caminho_pdf
+
+
+
+
+# =====================================================
+# LIMPEZA PDF
+# =====================================================
+
+def limpar_texto_pdf(texto):
+
+    texto = re.sub(r"\*\*", "", texto)
+
+    texto = re.sub(r"\*", "", texto)
+
+    texto = texto.replace(
+        "\n",
+        "<br/><br/>"
+    )
+
+    return texto
 
 # =====================================================
 # HERO
@@ -223,7 +248,16 @@ if uploaded_file and groq_key:
 # =====================================================
 
 if "vectorstore" in st.session_state:
-
+st.markdown(
+    """
+    <div class="section">
+        <h2 class="section-title">
+            ⚙️ Ferramentas
+        </h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     gerar_resumo = st.button(
         "📄 Gerar Resumo PDF",
         use_container_width=True
