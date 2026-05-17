@@ -43,6 +43,10 @@ body {
     border-radius: 24px;
 
     margin-bottom: 40px;
+
+    border: 1px solid rgba(148, 163, 184, 0.12);
+
+    backdrop-filter: blur(12px);
 }
 
 .hero h1 {
@@ -54,6 +58,8 @@ body {
     margin-bottom: 16px;
 
     font-family: 'Space Grotesk', sans-serif;
+
+    letter-spacing: -2px;
 }
 
 .hero-text {
@@ -65,23 +71,142 @@ body {
     line-height: 1.6;
 }
 
+/* SECTION */
+
+.section {
+
+    margin-top: 40px;
+
+    margin-bottom: 24px;
+}
+
+.section-title {
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    color: #f8fafc;
+
+    margin-bottom: 20px;
+
+    font-family: 'Space Grotesk', sans-serif;
+
+    letter-spacing: -1px;
+}
+
+/* STREAMLIT BUTTON */
+
+.stButton > button {
+
+    width: 100%;
+
+    background: linear-gradient(
+        135deg,
+        #7c3aed,
+        #8b5cf6
+    );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 18px;
+
+    padding: 14px 18px;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    transition: 0.3s;
+
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+}
+
+.stButton > button:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 12px 28px rgba(124, 58, 237, 0.35);
+
+    border: none;
+}
+
+.stButton > button:focus {
+
+    border: none;
+
+    outline: none;
+}
+
+/* DOWNLOAD BUTTON */
+
+.stDownloadButton > button {
+
+    width: 100%;
+
+    background: rgba(30, 41, 59, 0.9);
+
+    color: #f8fafc;
+
+    border: 1px solid rgba(148, 163, 184, 0.15);
+
+    border-radius: 18px;
+
+    padding: 14px 18px;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    transition: 0.3s;
+
+    backdrop-filter: blur(10px);
+}
+
+.stDownloadButton > button:hover {
+
+    transform: translateY(-3px);
+
+    border: 1px solid rgba(139, 92, 246, 0.4);
+
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* INPUT */
+
+.stTextInput input,
+.stFileUploader {
+
+    border-radius: 16px !important;
+}
+
 /* CARDS */
 
 .cards {
+
     display: flex;
+
     gap: 24px;
+
     padding: 20px 50px;
+
     flex-wrap: wrap;
 }
 
 .card {
+
     flex: 1;
+
     min-width: 260px;
 
     background: rgba(30,41,59,.75);
+
     border: 1px solid rgba(148,163,184,.15);
 
     padding: 28px;
+
     border-radius: 24px;
 
     backdrop-filter: blur(14px);
@@ -90,26 +215,45 @@ body {
 }
 
 .card:hover {
+
     transform: translateY(-6px);
+
+    border: 1px solid rgba(139, 92, 246, 0.4);
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .card h3 {
+
     color: white;
+
+    margin-bottom: 12px;
 }
 
 .card p {
+
     color: #cbd5e1;
+
+    line-height: 1.6;
 }
 
 /* CHAT */
 
 .chat-box {
+
     background: rgba(17,24,39,.9);
+
     padding: 28px;
+
     border-radius: 24px;
+
+    border: 1px solid rgba(148,163,184,.12);
+
+    backdrop-filter: blur(10px);
 }
 
 .message-user {
+
     background: linear-gradient(
         135deg,
         #7c3aed,
@@ -119,46 +263,76 @@ body {
     color: white;
 
     padding: 14px;
+
     border-radius: 16px;
+
     margin-bottom: 14px;
 
     width: fit-content;
+
     max-width: 70%;
+
     margin-left: auto;
+
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
 }
 
 .message-ai {
+
     background: #1e293b;
 
     color: #e2e8f0;
 
     padding: 14px;
+
     border-radius: 16px;
 
     width: fit-content;
+
     max-width: 70%;
+
     margin-right: auto;
+
+    border: 1px solid rgba(148,163,184,.08);
 }
 
 /* RISCOS */
 
 .risk {
+
     padding: 20px;
+
     border-radius: 18px;
+
     margin-bottom: 14px;
+
+    backdrop-filter: blur(10px);
+
+    transition: 0.3s;
+}
+
+.risk:hover {
+
+    transform: translateX(5px);
 }
 
 .red {
+
     background: rgba(239,68,68,.12);
+
     border: 1px solid rgba(239,68,68,.25);
 }
 
 .yellow {
+
     background: rgba(250,204,21,.12);
+
     border: 1px solid rgba(250,204,21,.25);
 }
 
 .green {
+
     background: rgba(34,197,94,.12);
+
     border: 1px solid rgba(34,197,94,.25);
 }
